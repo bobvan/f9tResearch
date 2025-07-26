@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from pyubx2 import UBXMessage, UBXReader, SET, SET_LAYER_RAM, TXN_NONE
 import serial
 from datetime import datetime
