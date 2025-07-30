@@ -3,10 +3,14 @@ import serial
 from datetime import datetime
 import csv
 import sys
+import os
+
+port = os.getenv("PORT", "/dev/ttyACM0")
+baud = os.getenv("BAUD", 9600          )
 
 # N.B. May have to stop gpsd to avoid port conflict
 try:
-    stream = serial.Serial('/dev/ttyACM0', 9600)
+    stream = serial.Serial(port, baud)
 except SerialException as e:
     print(f"Failed to open serial port: {e}")
     sys.exit(1)

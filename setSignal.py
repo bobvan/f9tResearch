@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 from serial import Serial
 from pyubx2 import UBXMessage, UBXReader, val2sphp, SET, SET_LAYER_RAM, TXN_NONE
+import os
 
-# Adjust for your setup
-PORT = "/dev/ttyACM0"  # Or COMx on Windows
-BAUD = 9600
+port = os.getenv("PORT", "/dev/ttyACM0")
+baud = os.getenv("BAUD", 9600          )
 
 
-with Serial(PORT, BAUD, timeout=2) as ser:
+with Serial(port, baud, timeout=2) as ser:
     # Construct CFG-VALSET message
     sigEnaMsg = UBXMessage.config_set(SET_LAYER_RAM, TXN_NONE,
         [

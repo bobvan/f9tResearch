@@ -1,7 +1,11 @@
 from serial import Serial
 from pyubx2 import UBXReader, UBXMessage, SET_LAYER_FLASH, SET_LAYER_BBR, TXN_NONE
+import os
 
-with Serial("/dev/ttyACM0", 9600) as ser:
+port = os.getenv("PORT", "/dev/ttyACM0")
+baud = os.getenv("BAUD", 9600          )
+
+with Serial(port, baud) as ser:
     delete_msg = UBXMessage.config_del(SET_LAYER_FLASH|SET_LAYER_BBR, TXN_NONE, [0xffffffff])
     print(delete_msg)
     ser.write(delete_msg.serialize())

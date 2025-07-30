@@ -4,10 +4,14 @@ import serial
 from datetime import datetime
 import csv
 import sys
+import os
+
+port = os.getenv("PORT", "/dev/ttyACM0")
+baud = os.getenv("BAUD", 9600          )
 
 # N.B. May have to stop gpsd to avoid port conflict
 try:
-    stream = serial.Serial('/dev/ttyACM0', 9600)
+    stream = serial.Serial(port, baud)
 except SerialException as e:
     print(f"Failed to open serial port: {e}")
     sys.exit(1)
@@ -19,6 +23,16 @@ cfgTimTp = UBXMessage('CFG', 'CFG-MSG', SET,
     msgID=0x01,
     portID=3,
     rateUSB=1
+)
+stream.write(cfgTimTp.serialize())
+
+# UBX-TIM-TP has class 0x0D (TIM), ID 0x01 (TP)
+# Arguments: msgClass, msgID, rates for each target port (UART1, UART2, USB, SPI, I2C)
+cfgTimTp = UBXMessage('CFG', 'CFG-MSG', SET,
+    msgClass=0x0D,
+    msgID=0x01,
+    portID=1,
+    rateUART1=1
 )
 stream.write(cfgTimTp.serialize())
 

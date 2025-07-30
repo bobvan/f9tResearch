@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from serial import Serial
 from pyubx2 import UBXMessage, UBXReader, val2sphp, SET, SET_LAYER_RAM, TXN_NONE
+import os
 
-# Adjust for your setup
-PORT = "/dev/ttyACM0"  # Or COMx on Windows
-BAUD = 9600
+port = os.getenv("PORT", "/dev/ttyACM0")
+baud = os.getenv("BAUD", 9600          )
 
 # Example Fixed Position (LLA)
 latitude_deg = 41.84305547
@@ -12,7 +12,7 @@ longitude_deg = -88.10367403
 height_m = 202.579   # ellipsoidal height, not MSL
 accuracy_m = 1       # estimated accuracy
 
-with Serial(PORT, BAUD, timeout=2) as ser:
+with Serial(port, baud, timeout=2) as ser:
     # Construct CFG-VALSET message
     lats, lath = val2sphp(latitude_deg)
     lons, lonh = val2sphp(longitude_deg)
