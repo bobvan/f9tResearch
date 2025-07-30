@@ -3,6 +3,7 @@ import serial
 from pyubx2 import UBXMessage, UBXReader, val2sphp, SET, POLL, POLL_LAYER_RAM, SET_LAYER_RAM, TXN_NONE, SIGCFMASK
 from enum import Enum, auto
 import sys
+import os
 
 gnssNameById = {
     0: "GPS",
@@ -48,9 +49,12 @@ KEY_TPMSGFREQ = 'CFG_MSGOUT_UBX_TIM_TP_USB'
 KEY_TIMEGRID  = 'CFG_TP_TIMEGRID_TP1'
 KEY_FPMODE    = 'CFG_TMODE_MODE'
 
+port = os.getenv("PORT", "/dev/ttyACM0")
+baud = os.getenv("BAUD", 9600          )
+
 # N.B. May have to stop gpsd to avoid port conflict
 try:
-    stream = serial.Serial('/dev/ttyACM0', 9600)
+    stream = serial.Serial(port, baud)
 except SerialException as e:
     print(f"Failed to open serial port: {e}")
     sys.exit(1)
