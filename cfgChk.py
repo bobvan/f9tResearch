@@ -24,6 +24,13 @@ timeReferenceByValue = { # Called timegrid in docs
     15: "LOCAL"
 }
 
+# Constants for CFG-TMODE_TMODE, see Table 69 in F9T interface description
+tmodeByValue = {
+    0: 'DISABLED',
+    1: 'SURVEY_IN',
+    2: 'FIXED'
+}
+
 class State(Enum):
     PollTp   = auto()
     WaitTp   = auto()
@@ -31,12 +38,15 @@ class State(Enum):
     WaitGrid = auto()
     PollGnss = auto()
     WaitGnss = auto()
+    PollFpos = auto()
+    WaitFpos = auto()
 
 state = State.PollTp
 
 # Config Keys
 KEY_TPMSGFREQ = 'CFG_MSGOUT_UBX_TIM_TP_USB'
 KEY_TIMEGRID  = 'CFG_TP_TIMEGRID_TP1'
+KEY_FPMODE    = 'CFG_TMODE_MODE'
 
 # N.B. May have to stop gpsd to avoid port conflict
 try:
@@ -56,6 +66,10 @@ while True:
             pollTimegridMsg = UBXMessage.config_poll(POLL_LAYER_RAM, 0, [KEY_TIMEGRID])
             stream.write(pollTimegridMsg.serialize())
             state = State.WaitGrid
+        case State.PollFpos:
+            pollFpModeMsg = UBXMessage.config_poll(POLL_LAYER_RAM, 0, [KEY_FPMODE])
+            stream.write(pollFpModeMsg.serialize())
+            state = State.WaitFpos
         case State.PollGnss:
             pollGnssMsg = UBXMessage("CFG", "CFG-GNSS", POLL)
             stream.write(pollGnssMsg.serialize())
@@ -66,6 +80,8 @@ while True:
             case State.WaitTp:
                 state = State.PollGrid
             case State.WaitGrid:
+                state = State.PollFpos
+            case State.WaitFpos:
                 state = State.PollGnss
             case State.WaitGnss:
                 break # Terminal state
@@ -75,6 +91,9 @@ while True:
     if parsed_data and parsed_data.identity == 'CFG-VALGET' and dir(parsed_data)[0] == KEY_TIMEGRID:
         grid =  vars(parsed_data)[KEY_TIMEGRID]
         print(f"TIMEGRID:  {timeReferenceByValue[grid]}")
+    if parsed_data and parsed_data.identity == 'CFG-VALGET' and dir(parsed_data)[0] == KEY_FPMODE:
+        tmode =  vars(parsed_data)[KEY_FPMODE]
+        print(f"TMODE:     {tmodeByValue.get(tmode, 'Unknown mode')}")
     if parsed_data and parsed_data.identity == 'CFG-GNSS':
         for i in range(1, parsed_data.numConfigBlocks+1):
             enableNN    = f'enable_{i:02}'
