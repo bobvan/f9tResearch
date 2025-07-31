@@ -26,15 +26,15 @@ cfgTimTp = UBXMessage('CFG', 'CFG-MSG', SET,
 )
 stream.write(cfgTimTp.serialize())
 
-# UBX-TIM-TP has class 0x0D (TIM), ID 0x01 (TP)
-# Arguments: msgClass, msgID, rates for each target port (UART1, UART2, USB, SPI, I2C)
-cfgTimTp = UBXMessage('CFG', 'CFG-MSG', SET,
-    msgClass=0x0D,
-    msgID=0x01,
-    portID=1,
-    rateUART1=1
-)
-stream.write(cfgTimTp.serialize())
+## UBX-TIM-TP has class 0x0D (TIM), ID 0x01 (TP)
+## Arguments: msgClass, msgID, rates for each target port (UART1, UART2, USB, SPI, I2C)
+#cfgTimTp = UBXMessage('CFG', 'CFG-MSG', SET,
+#    msgClass=0x0D,
+#    msgID=0x01,
+#    portID=1,
+#    rateUART1=1
+#)
+#stream.write(cfgTimTp.serialize())
 
 cfgData = [("CFG_TP_TIMEGRID_TP1", 0)] # TP1 = UTC
 cfgTimeBaseUtc = UBXMessage.config_set(SET_LAYER_RAM, TXN_NONE, cfgData)
