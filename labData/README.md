@@ -11,4 +11,4 @@ fixedL1l51  Fixed position, only GPS L1 C/A and L5 signals enabled, run 1
 fixedL1l52  Same, but running two F9Ts, but timestamps from ptBoat were wrong
 fixedL1l53  Same, but with fixed clock on ptBoat, long run
 f9tM600-1   chA: F9T on PT raw PPS, chB: M600 DHQ, < 1 hour since boot
-f9tM600-1   chA: F9T on PT raw PPS, chB: M600 DHQ, second run, stabilized
+f9tM600-2   chA: F9T on PT raw PPS, chB: M600 DHQ, second run, stabilized
