@@ -32,15 +32,33 @@ tmodeByValue = {
     2: 'FIXED'
 }
 
-class State(Enum):
+dynModelByValue = {
+    0:  'PORT',    # Portable
+    2:  'STAT',    # Stationary
+    3:  'PED',     # Pedestrian
+    4:  'AUTOMOT', # Automotive
+    5:  'SEA',     # Sea
+    6:  'AIR1',    # Airborne with <1g acceleration
+    7:  'AIR2',    # Airborne with <2g acceleration
+    8:  'AIR4',    # Airborne with <4g acceleration
+    9:  'WRIST',   # Wrist-worn watch (not available in all products)
+    10: 'BIKE',    # Motorbike (not available in all products)
+    11: 'MOWER',   # Robotic lawn mower (not available in all products)
+    12: 'ESCOOTER' # E-scooter (not available in all products)
+}
+
+class State(Enum): # Try to keep in order of execution, just for sanity
     PollTp   = auto()
     WaitTp   = auto()
     PollGrid = auto()
     WaitGrid = auto()
-    PollGnss = auto()
-    WaitGnss = auto()
     PollFpos = auto()
     WaitFpos = auto()
+    PollDMdl = auto()
+    WaitDMdl = auto()
+    PollGnss = auto()
+    WaitGnss = auto()
+
 
 state = State.PollTp
 
@@ -48,6 +66,7 @@ state = State.PollTp
 KEY_TPMSGFREQ = 'CFG_MSGOUT_UBX_TIM_TP_USB'
 KEY_TIMEGRID  = 'CFG_TP_TIMEGRID_TP1'
 KEY_FPMODE    = 'CFG_TMODE_MODE'
+KEY_DYNMODEL  = 'CFG_NAVSPG_DYNMODEL'
 
 port = os.getenv("PORT", "/dev/ttyACM0")
 baud = os.getenv("BAUD", 9600          )
@@ -61,6 +80,7 @@ except SerialException as e:
 
 ubr = UBXReader(stream, protfilter=2)
 while True:
+    # Handle polling states by sending config poll
     match state:
         case State.PollTp:
             pollTpFreq = UBXMessage.config_poll(POLL_LAYER_RAM, 0, [KEY_TPMSGFREQ])
@@ -74,11 +94,19 @@ while True:
             pollFpModeMsg = UBXMessage.config_poll(POLL_LAYER_RAM, 0, [KEY_FPMODE])
             stream.write(pollFpModeMsg.serialize())
             state = State.WaitFpos
+        case State.PollDMdl:
+            pollFpModeMsg = UBXMessage.config_poll(POLL_LAYER_RAM, 0, [KEY_DYNMODEL])
+            stream.write(pollFpModeMsg.serialize())
+            state = State.WaitDMdl
         case State.PollGnss:
             pollGnssMsg = UBXMessage("CFG", "CFG-GNSS", POLL)
             stream.write(pollGnssMsg.serialize())
             state = State.WaitGnss
+
+    # Blocking read for response
     (raw_data, parsed_data) = ubr.read()
+
+    # Handle wait states successfully ACK'd by progressing to next polling state
     if parsed_data and parsed_data.identity == 'ACK-ACK':
         match state:
             case State.WaitTp:
@@ -86,9 +114,14 @@ while True:
             case State.WaitGrid:
                 state = State.PollFpos
             case State.WaitFpos:
+                state = State.PollDMdl
+            case State.WaitDMdl:
                 state = State.PollGnss
             case State.WaitGnss:
                 break # Terminal state
+
+    # Decode and print results of expected poll responses
+    # print(parsed_data)
     if parsed_data and parsed_data.identity == 'CFG-VALGET' and dir(parsed_data)[0] == KEY_TPMSGFREQ:
         freq =  vars(parsed_data)[KEY_TPMSGFREQ]
         print(f"TPMSGFREQ: {freq} per nav solution")
@@ -98,6 +131,9 @@ while True:
     if parsed_data and parsed_data.identity == 'CFG-VALGET' and dir(parsed_data)[0] == KEY_FPMODE:
         tmode =  vars(parsed_data)[KEY_FPMODE]
         print(f"TMODE:     {tmodeByValue.get(tmode, 'Unknown mode')}")
+    if parsed_data and parsed_data.identity == 'CFG-VALGET' and dir(parsed_data)[0] == KEY_DYNMODEL:
+        dynmodel =  vars(parsed_data)[KEY_DYNMODEL]
+        print(f"DYNMODEL:  {dynModelByValue.get(dynmodel, 'Unknown model')}")
     if parsed_data and parsed_data.identity == 'CFG-GNSS':
         for i in range(1, parsed_data.numConfigBlocks+1):
             enableNN    = f'enable_{i:02}'
@@ -113,6 +149,8 @@ while True:
                             print(f"Enabled:   {signal}")
             else:
                 print(f"Disabled:  {gnssNameById[gnssId]}")
+
+    # Handle NAK
     if parsed_data and parsed_data.identity == 'ACK-NAK':
         print(f"Got a NAK in state {state.name}")
         break
