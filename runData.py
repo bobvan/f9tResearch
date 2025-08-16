@@ -1,4 +1,5 @@
 # Data on test runs
+# Keys "A" and "B" may be used in file names for export
 runData = {
     "baseline1":  {"A": "F9T-Bob", "notes": "Config left over from previous experiments, run 1"},
     "baseline2":  {"A": "F9T-Bob", "notes": "Config left over from previous experiments, run 2"},
@@ -13,7 +14,6 @@ runData = {
     # I think the incorrect host timestamps on fixedL1l52 my correlate incorrectly with epoch seconds. Danger!
     "fixedL1l52": {"A": "F9T-Bob", "B": "F9T-PT", "notes": "Fixed position, L1 C/A and L5 signals, run 2, short, wrong host timestamps on F9T-PT"},
     "fixedL1l53": {"A": "F9T-Bob", "B": "F9T-PT", "notes": "Fixed position, L1 C/A and L5 signals, run 3, longer, fixed host timestamps on F9T-PT"},
-    "f9tM600-1":  {"A": "F9T-PT", "B": "M600 DHQ", "notes": "< 1 hour since boot"},
-    "f9tM600-2":  {"A": "F9T-PT", "B": "M600 DHQ", "notes": "second run, stabilized"},
+    "f9tM600-1":  {"A": "F9T-PT", "B": "M600-DHQ", "notes": "< 1 hour since boot"},
+    "f9tM600-2":  {"A": "F9T-PT", "B": "M600-DHQ", "notes": "second run, stabilized"},
 }
-print("RunData loaded, keys", runData.keys())
