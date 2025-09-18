@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import serial
-from pyubx2 import UBXMessage, UBXReader, val2sphp, SET, POLL, POLL_LAYER_RAM, SET_LAYER_RAM, TXN_NONE, SIGCFMASK
+from serial import SerialException
+from pyubx2 import UBXMessage, UBXReader, POLL, POLL_LAYER_RAM, SIGCFMASK
 from enum import Enum, auto
 import sys
 import os
@@ -68,7 +69,7 @@ KEY_TIMEGRID  = 'CFG_TP_TIMEGRID_TP1'
 KEY_FPMODE    = 'CFG_TMODE_MODE'
 KEY_DYNMODEL  = 'CFG_NAVSPG_DYNMODEL'
 
-port = os.getenv("PORT", "/dev/ttyACM0")
+port = os.getenv("PORT", "/dev/serial/by-id/usb-u-blox_AG_-_www.u-blox.com_u-blox_GNSS_receiver-if00")
 baud = os.getenv("BAUD", 9600          )
 
 # N.B. May have to stop gpsd to avoid port conflict

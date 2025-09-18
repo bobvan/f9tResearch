@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from pyubx2 import UBXMessage, UBXReader, SET, SET_LAYER_RAM, TXN_NONE
 import serial
+from serial import SerialException
 from datetime import datetime
 import csv
 import sys
 import os
 
-port = os.getenv("PORT", "/dev/ttyACM0")
+port = os.getenv("PORT", "/dev/serial/by-id/usb-u-blox_AG_-_www.u-blox.com_u-blox_GNSS_receiver-if00")
 baud = os.getenv("BAUD", 9600          )
 
 # N.B. May have to stop gpsd to avoid port conflict

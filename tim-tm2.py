@@ -5,7 +5,7 @@ import csv
 import sys
 import os
 
-port = os.getenv("PORT", "/dev/ttyACM0")
+port = os.getenv("PORT", "/dev/serial/by-id/usb-u-blox_AG_-_www.u-blox.com_u-blox_GNSS_receiver-if00")
 baud = os.getenv("BAUD", 9600          )
 
 # N.B. May have to stop gpsd to avoid port conflict
