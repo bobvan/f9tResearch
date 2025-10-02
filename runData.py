@@ -16,4 +16,5 @@ runData = {
     "fixedL1l53": {"A": "F9T-Bob", "B": "F9T-PT", "notes": "Fixed position, L1 C/A and L5 signals, run 3, longer, fixed host timestamps on F9T-PT"},
     "f9tM600-1":  {"A": "F9T-PT", "B": "M600-DHQ", "notes": "< 1 hour since boot"},
     "f9tM600-2":  {"A": "F9T-PT", "B": "M600-DHQ", "notes": "second run, stabilized"},
+    "ctiCns1":    {"A": "CTIocxo", "B": "CNSclockII", "notes": "run 1, CNS jittery"},
 }
