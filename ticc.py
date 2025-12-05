@@ -10,7 +10,8 @@ if len(sys.argv) != 2:
 pathname = sys.argv[1]
 
 try:
-    stream = serial.Serial('/dev/ttyACM1', 115200)
+    stream = serial.Serial(
+        "/dev/serial/by-id/usb-Arduino__www.arduino.cc__0042_95037323535351803130-if00", 115200)
 except SerialException as e:
     print(f"Failed to open serial port: {e}")
     sys.exit(1)
