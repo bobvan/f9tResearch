@@ -1,0 +1,19 @@
+{
+  "cn0_mean": 39.217289719626166,
+  "cn0_std": 8.10226575788462,
+  "cn0_min": 17.0,
+  "prres_mean": 0.49803738317757007,
+  "prres_std": 0.7600881518629915,
+  "prres_95pct": 2.4065,
+  "avg_elevation": 37.572429906542055,
+  "sats_above_30deg": 0.616822429906542,
+  "time_acc_mean_ns": 20.999999999999996,
+  "time_acc_rms_ns": 21.0,
+  "clock_drift_mean_ns_per_s": 74.00000000000003,
+  "clock_drift_std_ns_per_s": 2.6469779601696886e-14,
+  "time_acc_clock_mean_ns": 1.0000000000000002,
+  "freq_acc_mean_ppb": 0.09750000000000002,
+  "pdop_mean": 0.9999,
+  "tdop_mean": 0.0018,
+  "avg_num_sv": 30.714285714285715
+}

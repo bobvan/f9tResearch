@@ -195,13 +195,20 @@ class F9TTimingAnalyzer:
     
     def _process_nav_clock(self, msg, timestamp):
         """Process NAV-CLOCK message"""
+        # NAV-CLOCK fields from F9T:
+        # clkB: Clock bias in nanoseconds
+        # clkD: Clock drift in nanoseconds/second
+        # tAcc: Time accuracy estimate in nanoseconds
+        # fAcc: Frequency accuracy estimate in picoseconds/second
         clock_data = {
             'timestamp': timestamp,
-            'clkB': msg.clkB * 1e-9,  # Clock bias in seconds
-            'clkD': msg.clkD * 1e-9,  # Clock drift in seconds/second
-            'tAcc': msg.tAcc * 1e-9,  # Time accuracy in seconds
-            'fAcc': msg.fAcc * 1e-12,  # Frequency accuracy
+            'clkB': msg.clkB * 1e-9,  # Convert ns to seconds
+            'clkD': msg.clkD * 1e-9,  # Convert ns/s to s/s
+            'tAcc': msg.tAcc * 1e-9,  # Convert ns to seconds
+            'fAcc': msg.fAcc * 1e-12,  # Convert ps/s to s/s
         }
+        print(msg)
+        print(clock_data)
         self.nav_clock_data.append(clock_data)
     
     def _process_tim_tp(self, msg, timestamp):
@@ -268,16 +275,26 @@ class F9TTimingAnalyzer:
         metrics['avg_elevation'] = float(np.mean(elevations)) if elevations else 0
         metrics['sats_above_30deg'] = float(sum(1 for e in elevations if e >= 30) / len(elevations)) if elevations else 0
 
-        # Timing accuracy
+        # Timing accuracy from NAV-PVT
         if self.nav_pvt_data:
             t_accs = [p['tAcc'] for p in self.nav_pvt_data]
             metrics['time_acc_mean_ns'] = float(np.mean(t_accs) * 1e9)
             metrics['time_acc_rms_ns'] = float(np.sqrt(np.mean(np.array(t_accs)**2)) * 1e9)
-        
-        # Clock stability
+
+        # Clock metrics from NAV-CLOCK
         if self.nav_clock_data:
-            clk_biases = [c['clkB'] for c in self.nav_clock_data]
-            metrics['clock_bias_std_ns'] = float(np.std(clk_biases) * 1e9)
+            # Clock drift (rate of change of clock bias)
+            clk_drifts = [c['clkD'] for c in self.nav_clock_data]
+            metrics['clock_drift_mean_ns_per_s'] = float(np.mean(clk_drifts) * 1e9)
+            metrics['clock_drift_std_ns_per_s'] = float(np.std(clk_drifts) * 1e9)
+
+            # Time accuracy estimate from receiver
+            t_accs_clk = [c['tAcc'] for c in self.nav_clock_data]
+            metrics['time_acc_clock_mean_ns'] = float(np.mean(t_accs_clk) * 1e9)
+
+            # Frequency accuracy estimate (converted from s/s to ppb - parts per billion)
+            f_accs = [c['fAcc'] for c in self.nav_clock_data]
+            metrics['freq_acc_mean_ppb'] = float(np.mean(f_accs) * 1e9)
 
         # DOP values
         if self.nav_dop_data:
@@ -314,7 +331,13 @@ class F9TTimingAnalyzer:
         print(f"  Average # SVs: {metrics.get('avg_num_sv', 0):.1f}")
         print(f"\nTiming Performance:")
         print(f"  Time accuracy (RMS): {metrics.get('time_acc_rms_ns', 0):.1f} ns")
-        print(f"  Clock bias std: {metrics.get('clock_bias_std_ns', 0):.1f} ns")
+        if 'clock_drift_mean_ns_per_s' in metrics:
+            print(f"  Clock drift (mean): {metrics['clock_drift_mean_ns_per_s']:.3f} ns/s")
+            print(f"  Clock drift (std): {metrics['clock_drift_std_ns_per_s']:.3f} ns/s")
+        if 'time_acc_clock_mean_ns' in metrics:
+            print(f"  Time accuracy (NAV-CLOCK): {metrics['time_acc_clock_mean_ns']:.1f} ns")
+        if 'freq_acc_mean_ppb' in metrics:
+            print(f"  Frequency accuracy: {metrics['freq_acc_mean_ppb']:.3f} ppb")
         print(f"  TDOP: {metrics.get('tdop_mean', 0):.2f}")
         print(f"  PDOP: {metrics.get('pdop_mean', 0):.2f}")
         
@@ -430,7 +453,7 @@ if __name__ == "__main__":
         analyzer.configure_f9t()
         
         # Collect data for 10 minutes (adjust as needed)
-        analyzer.collect_data(duration_minutes=500)
+        analyzer.collect_data(duration_minutes=1)
         
         # Generate analysis report
         metrics = analyzer.generate_report(output_prefix='antenna_test_1')
